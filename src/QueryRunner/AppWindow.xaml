@@ -1,0 +1,269 @@
+﻿<Window x:Class="QueryRunner.AppWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QueryRunner"
+        mc:Ignorable="d"
+        Title="Access Query Runner" Height="700" Width="800" WindowStartupLocation="CenterScreen" MinHeight="560" MinWidth="760" Closing="Window_Closing">
+    <Window.CommandBindings>
+        <CommandBinding Command="local:ViewCommands.Close" CanExecute="Close_CanExecute" Executed="Close_Executed" />
+        <CommandBinding Command="local:ViewCommands.Exit" CanExecute="Close_CanExecute" Executed="Close_Executed" />
+    </Window.CommandBindings>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" x:Name="mainWindowMenu" Height="Auto">
+            <MenuItem x:Name="fileMenu" Header="_File" Height="24">
+                <MenuItem Command="local:ViewCommands.Exit" />
+            </MenuItem>
+        </Menu>
+        <StatusBar DockPanel.Dock="Bottom" BorderThickness="0,1,0,0" BorderBrush="#FFABADB3" Height="26">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="5*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="132" />
+                            <ColumnDefinition Width="1*" />
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <StatusBarItem>
+                <TextBlock x:Name="statusMessage" Text="{Binding StatusMessage, Mode=OneWay}" />
+            </StatusBarItem>
+            <Separator Grid.Column="1" />
+            <StatusBarItem Grid.Column="2" HorizontalAlignment="Right">
+                <TextBlock Text="Query Processing Time:" Margin="0,0,0,0" />
+            </StatusBarItem>
+            <StatusBarItem Grid.Column="3">
+                <TextBlock x:Name="statusProcessTime" Text="{Binding ProcessTime, Mode=OneWay}" />
+            </StatusBarItem>
+        </StatusBar>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="44" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Border Grid.Row="0" BorderThickness="0,0,0,1" BorderBrush="DarkGray">
+                <Grid x:Name="settingsGrid" IsEnabled="{Binding Idle}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="120" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="50" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Label Grid.Column="0" Grid.Row="0"  Content="Access Database:" HorizontalAlignment="Right" Margin="0,10,0,5" VerticalAlignment="Center" />
+                        <TextBox x:Name="DatabasePath" Grid.Column="1" Grid.Row="0" Height="24" VerticalContentAlignment="Center" Margin="0,10,0,5" Text="{Binding DatabasePath, Mode=TwoWay}"/>
+                        <Button Grid.Column="2" Grid.Row="0" Width="30" Height="24" Content=". . ." Margin="0,10,0,5" Command="{Binding BrowseForDatabaseCommand}" />
+                        <CheckBox Grid.Column="1" Grid.Row="1" Content="Remember database" HorizontalAlignment="Right" Margin="0,0,0,10" IsChecked="{Binding RememberDatabase}" />
+                    </Grid>
+                    <Separator Grid.Row="1" />
+                    <GroupBox Grid.Row="2" BorderThickness="0" Margin="0,0,0,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="124" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="44" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <RadioButton x:Name="TextOption" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" Content="Output Query Results to Text Files" Margin="5,10,0,0" IsChecked="{Binding TextOutput}" />
+                            <Label Grid.Column="0" Grid.Row="1" Content="Text File Directory:" HorizontalAlignment="Right" IsEnabled="{Binding ElementName=TextOption, Path=IsChecked, TargetNullValue=True}"/>
+                            <TextBox x:Name="TextFileDirectory" Grid.Column="1" Grid.Row="1" Height="24" VerticalContentAlignment="Center" Text="{Binding TextFileDirectory, Mode=TwoWay}" IsEnabled="{Binding ElementName=TextOption, Path=IsChecked, TargetNullValue=True}" />
+                            <Button Grid.Column="2" Grid.Row="1" Width="30" Height="24" Margin="0,0,4,0" Content=". . ." Command="{Binding BrowseForDirectoryCommand}" IsEnabled="{Binding ElementName=TextOption, Path=IsChecked, TargetNullValue=True}" VerticalContentAlignment="Top" HorizontalAlignment="Right" />
+                            <RadioButton x:Name="ExcelOption" Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" Content="Output Query Results to Excel File" Margin="5,10,0,0" />
+                            <Label Grid.Column="0" Grid.Row="3" Content="Excel File:" HorizontalAlignment="Right" IsEnabled="{Binding ElementName=ExcelOption, Path=IsChecked, TargetNullValue=False}" />
+                            <TextBox x:Name="ExcelFilePath" Grid.Column="1" Grid.Row="3" Height="24" VerticalContentAlignment="Center" Text="{Binding ExcelFilePath, Mode=TwoWay}" IsEnabled="{Binding ElementName=ExcelOption, Path=IsChecked, TargetNullValue=False}" />
+                            <Button Grid.Column="2" Grid.Row="3" Width="30" Height="24" Margin="0,0,4,0" Content=". . ." Command="{Binding BrowseForExcelFileCommand}" IsEnabled="{Binding ElementName=ExcelOption, Path=IsChecked, TargetNullValue=False}" HorizontalAlignment="Right" />
+                        </Grid>
+                    </GroupBox>
+                </Grid>
+            </Border>
+            <Grid Grid.Row="1" x:Name="dateGrid" IsEnabled="{Binding Idle}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="120" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="40" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Grid.Row="4" Content="Default Date Range" HorizontalAlignment="Right" Margin="0,0,5,0" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Height="24" Content="This Week" Margin="0,0,4,0" CommandParameter="ThisWeek" Command="{Binding SetDateRangeCommand}" MaxWidth="200" />
+                <Button Grid.Column="2" Height="24" Content="Last Week" Margin="4,0,4,0" CommandParameter="LastWeek" Command="{Binding SetDateRangeCommand}" MaxWidth="200" />
+                <Button Grid.Column="3" Height="24" Content="Current Month" Margin="4,0,4,0" CommandParameter="CurrentMonth" Command="{Binding SetDateRangeCommand}" MaxWidth="200" />
+                <Label Grid.Column="4" Content="Start:" HorizontalAlignment="Right" Margin="0" VerticalAlignment="Center" />
+                <DatePicker Grid.Column="5" Grid.Row="4" VerticalAlignment="Center" SelectedDate="{Binding StartDate, Mode=TwoWay}" MaxWidth="260" Margin="0,0,10,0"/>
+                <Label Grid.Column="6" Grid.Row="4" Content="End:" HorizontalAlignment="Right" Margin="0" VerticalAlignment="Center" />
+                <DatePicker Grid.Column="7" Grid.Row="4" VerticalAlignment="Center" SelectedDate="{Binding EndDate, Mode=TwoWay}" MaxWidth="260" Margin="0,0,10,0"/>
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="2*" />
+                    <RowDefinition Height="44" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="44" />
+                </Grid.RowDefinitions>
+                <Grid x:Name="queriesGrid" Grid.Row="0" IsEnabled="{Binding Idle}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="36" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Grid.Row="0" Text="Queries" VerticalAlignment="Bottom" Margin="15,0,5,5" />
+                    <ListView
+                        x:Name="queriesList"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        Margin="10,0,5,0"
+                        BorderThickness="1"
+                        BorderBrush="#FFABADB3"
+                        ItemsSource="{Binding Queries, Mode=OneWay}"
+                        SelectionMode="Single">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel IsEnabled="{Binding Valid, Mode=OneWay}">
+                                    <CheckBox x:Name="querySelector" DockPanel.Dock="Left" IsChecked="{Binding Selected, Mode=TwoWay}" Margin="5,0,5,0"/>
+                                    <WrapPanel>
+                                        <TextBlock Text="{Binding QueryName, Mode=OneWay}" />
+                                        <TextBlock Text=" (" />
+                                        <TextBlock Text="{Binding QueryCommandType, Mode=OneWay}" />
+                                        <TextBlock Text=")" />
+                                    </WrapPanel>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <DockPanel Grid.Column="1" Grid.Row="0" Margin="5,0,10,0">
+                        <TextBlock DockPanel.Dock="Left" Text="{Binding Path=SelectedItem.QueryName, ElementName=queriesList}" VerticalAlignment="Bottom" Margin="5,0,0,5" FontWeight="Bold" />
+                        <TextBlock Text="Parameters" VerticalAlignment="Bottom" Margin="5,0,0,5" />
+                    </DockPanel>
+                    <DataGrid
+                        Grid.Column="1"
+                        Grid.Row="1"
+                        ItemsSource="{Binding Path=SelectedItem.QueryParameters.Entities, ElementName=queriesList}"
+                        AutoGenerateColumns="False"
+                        EnableRowVirtualization="True"
+                        Margin="5,0,10,0"
+                        BorderThickness="1"
+                        BorderBrush="#FFABADB3"
+                        RowDetailsVisibilityMode="VisibleWhenSelected"
+                        HorizontalGridLinesBrush="Gainsboro"
+                        VerticalGridLinesBrush="Gainsboro"
+                        CanUserAddRows="False"
+                        CanUserDeleteRows="False"
+                        CanUserReorderColumns="False"
+                        CanUserSortColumns="False"
+                        RowHeaderWidth="0"
+                        IsEnabled="{Binding Idle}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding ParameterName, Mode=OneWay}" Header="Parameter Name" IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding Type, Mode=OneWay}" Header="Parameter Type" IsReadOnly="True"/>
+                            <DataGridTextColumn Binding="{Binding Value, Mode=TwoWay}" Header="Value" IsReadOnly="False" MinWidth="182"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="runButton"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Content="Run Selected Queries"
+                        Height="24"
+                        Margin="10"
+                        Command="{Binding RunQueriesCommand}"
+                        MaxWidth="200" />
+                </Grid>
+                <DataGrid
+                    Grid.Row="2"
+                    AutoGenerateColumns="False"
+                    EnableRowVirtualization="True"
+                    Margin="10,0,10,0"
+                    RowDetailsVisibilityMode="VisibleWhenSelected"
+                    HorizontalGridLinesBrush="Gainsboro"
+                    BorderBrush="LightGray"
+                    CanUserAddRows="False"
+                    CanUserDeleteRows="False"
+                    RowHeaderWidth="0"
+                    HeadersVisibility="Column"
+                    ColumnHeaderHeight="24"
+                    ItemsSource="{Binding Messages}"
+                    GridLinesVisibility="Horizontal"
+                    CanUserResizeRows="False"
+                    CanUserReorderColumns="False"
+                    CanUserResizeColumns="False"
+                    CanUserSortColumns="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Binding="{Binding}" Header="Process Messages" IsReadOnly="True" Width="*" CanUserReorder="False">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style>
+                                    <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                    <Setter Property="TextBlock.Padding" Value="2" />
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="clearButton"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"
+                        Content="Clear Messages"
+                        Height="24"
+                        Margin="10"
+                        Command="{Binding ClearMessagesCommand}"
+                        MaxWidth="200" />
+                    <Button x:Name="directoryButton"
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        Content="Open Output Directory"
+                        Height="24"
+                        Margin="10"
+                        Command="{Binding OpenDirectoryCommand}"
+                        MaxWidth="200" />
+                    <Button x:Name="closeButton"
+                        Grid.Column="4"
+                        VerticalAlignment="Center"
+                        Content="Close"
+                        Height="24"
+                        Margin="10"
+                        Command="local:ViewCommands.Close"
+                        MaxWidth="200" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
